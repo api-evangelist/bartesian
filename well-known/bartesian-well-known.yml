@@ -1,0 +1,97 @@
+generated: '2026-08-06'
+method: searched
+source: https://bartesian.com/.well-known/
+notes: >-
+  Bartesian runs one public web property: bartesian.com, a Shopify storefront
+  (canonical origin bartesianshop.myshopify.com). No api.bartesian.com,
+  developer.bartesian.com or docs.bartesian.com host resolves. Every document
+  below was observed on bartesian.com with a desktop browser user-agent and no
+  credentials.
+
+  A control probe of /.well-known/ZZZ-control-path-does-not-exist returned 404
+  with the same 4264-byte Shopify 404 body as the other misses, so the 200s
+  recorded here are real documents and not an SPA catch-all answering 200 to
+  everything.
+hosts:
+- host: https://bartesian.com
+  role: Shopify storefront - commerce site and agent surface
+  documents:
+  - path: /.well-known/ucp
+    status: 200
+    content_type: application/json
+    file: bartesian-ucp.json
+    note: UCP merchant profile - version 2026-04-08 (plus 2026-01-23), dev.ucp.shopping
+      over MCP and embedded transports, checkout/cart/fulfillment/discount/order/catalog
+      capabilities, three payment handlers
+  - path: /.well-known/ucp/2026-04-08
+    status: 200
+    content_type: application/json
+    note: version-pinned merchant profile; not captured separately (superset lives
+      in bartesian-ucp.json)
+  - path: /.well-known/openid-configuration
+    status: 200
+    content_type: application/json
+    file: bartesian-openid-configuration.json
+    note: Shopify customer-account OIDC discovery, issuer https://shopify.com/authentication/3860496433
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    content_type: application/json
+    file: bartesian-oauth-authorization-server.json
+    note: RFC 8414 authorization-server metadata; byte-identical to the OIDC document
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    content_type: application/json
+    file: bartesian-oauth-protected-resource.json
+    note: RFC 9728 protected-resource metadata, bearer via header
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/ZZZ-control-path-does-not-exist
+    status: 404
+    note: control probe - confirms 404s above are genuine misses
+  - path: /llms.txt
+    status: 200
+    content_type: text/markdown
+    file: ../llms/bartesian-llms.txt
+  - path: /agents.md
+    status: 200
+    content_type: text/markdown
+    file: ../llms/bartesian-agents.md
+    note: canonical agent doc; /llms.txt mirrors it and differs by exactly one line
+      (the self-reference in the Store Metadata section)
+  - path: /sitemap.xml
+    status: 200
+  - path: /sitemap_agentic_discovery.xml
+    status: 200
+    note: dedicated agentic-discovery sitemap listing /agents.md with changefreq weekly
+  - path: /robots.txt
+    status: 200
+    note: 'declares `llms: https://bartesian.com/llms.txt` and points AI bots at /pages/llms-txt'
+  - path: /openapi.json
+    status: 404
+  - path: /swagger.json
+    status: 404
+  - path: /api-docs
+    status: 404
+  - path: /docs
+    status: 404
+  - path: /developers
+    status: 404
+  - path: /graphql
+    status: 404
+  - path: /api/ucp/mcp
+    status: 200
+    method: POST
+    content_type: application/json
+    note: live UCP Shopping MCP endpoint; see ../mcp/bartesian-mcp.yml. GET returns
+      404 - POST only.
+x-evidence:
+  fetched: '2026-08-06'
+  method: HTTP GET (POST for the MCP endpoint), desktop browser user-agent, no credentials

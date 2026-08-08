@@ -1,0 +1,191 @@
+generated: '2026-08-06'
+method: searched
+status: published
+source: https://bartesian.com/.well-known/ucp
+docs: https://bartesian.com/agents.md
+server:
+  name: universal-commerce
+  server_version: 0.1.0
+  transport: http
+  protocol: MCP (JSON-RPC 2.0 over HTTP POST)
+  mcp_protocol_version: '2025-06-18'
+  url: https://bartesian.com/api/ucp/mcp
+  canonical_url: https://bartesianshop.myshopify.com/api/ucp/mcp
+  service: dev.ucp.shopping
+  standard: Universal Commerce Protocol (UCP)
+  spec: https://ucp.dev/2026-04-08/specification/overview/
+  schema: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
+  tools_file: bartesian-ucp-shopping-tools.json
+  versions:
+    current: '2026-04-08'
+    supported:
+    - '2026-04-08'
+    - '2026-01-23'
+  platform: Shopify (shop_id 3860496433)
+  transports_declared:
+  - transport: mcp
+    endpoint: https://bartesianshop.myshopify.com/api/ucp/mcp
+    schema: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
+  - transport: embedded
+    schema: https://ucp.dev/2026-04-08/services/shopping/embedded.openrpc.json
+introspection:
+  tools_list: open
+  initialize: open
+  tools_call: gated
+  note: >-
+    Anonymous introspection SUCCEEDS on this store. An unauthenticated
+    `initialize` returns HTTP 200 with serverInfo universal-commerce 0.1.0 and
+    protocolVersion 2025-06-18, and an unauthenticated `tools/list` returns HTTP
+    200 with all 13 tools and their complete JSON Schema draft 2020-12
+    inputSchemas. Those live schemas are saved verbatim in
+    bartesian-ucp-shopping-tools.json - they are the real contract, not a
+    reconstruction from the ucp.dev OpenRPC document.
+
+    Invoking a tool is a different matter. `tools/call` and `resources/list`
+    both require meta.ucp-agent.profile (the HTTP UCP-Agent header) carrying the
+    calling platform's own UCP profile URI; without it the endpoint returns HTTP
+    422 and JSON-RPC error -32001 "UCP discovery failed" / invalid_profile_url.
+    So the store publishes its tool contract openly and gates only execution.
+  observed:
+  - method: initialize
+    http_status: 200
+    result: {protocolVersion: '2025-06-18', serverInfo: {name: universal-commerce,
+        version: 0.1.0}, capabilities: [tools, prompts, resources, logging]}
+  - method: tools/list
+    http_status: 200
+    tool_count: 13
+  - method: tools/call
+    tool: search_catalog
+    http_status: 422
+    error_code: -32001
+    error_message: UCP discovery failed
+    error_data_code: invalid_profile_url
+    error_data_content: 'Unable to fetch agent profile: Missing profile uri'
+  - method: resources/list
+    http_status: 422
+    error_code: -32001
+tools_source: >-
+  Live anonymous tools/list against https://bartesian.com/api/ucp/mcp on
+  2026-08-06, saved verbatim to mcp/bartesian-ucp-shopping-tools.json. Tool
+  names and parameter sets below are read out of that response; the full
+  inputSchema for each tool lives in the saved file.
+tools:
+- name: search_catalog
+  description: Search for products from the online store, hosted on Shopify, using
+    natural language queries and filters.
+  params: [meta, catalog]
+  category: catalog
+- name: lookup_catalog
+  description: Look up multiple products or variants by identifier in a single request.
+  params: [meta, catalog]
+  category: catalog
+- name: get_product
+  description: Retrieve complete product detail by identifier, with variants, exact
+    pricing and real-time availability.
+  params: [meta, catalog]
+  category: catalog
+- name: create_cart
+  description: Creates a new cart.
+  params: [meta, cart]
+  category: cart
+- name: get_cart
+  description: Get the cart contents.
+  params: [meta, id]
+  category: cart
+- name: update_cart
+  description: Perform updates to a cart.
+  params: [meta, cart, id]
+  category: cart
+- name: cancel_cart
+  description: Cancels a cart.
+  params: [meta, id]
+  category: cart
+- name: create_checkout
+  description: Creates a checkout. Returns checkout details, including line items,
+    totals, and any applicable discounts or taxes.
+  params: [meta, checkout]
+  category: checkout
+- name: get_checkout
+  description: Returns details about the checkout, including line items, totals, and
+    any applicable discounts or taxes.
+  params: [meta, id]
+  category: checkout
+- name: update_checkout
+  description: Updates a checkout. Returns checkout details, including line items,
+    totals, and any applicable discounts or taxes.
+  params: [meta, checkout, id]
+  category: checkout
+- name: complete_checkout
+  description: Completes a checkout and returns the checkout result, including order
+    ID and Thank You Page URL. Buyer approval is required before payment.
+  params: [meta, checkout, id]
+  category: checkout
+- name: cancel_checkout
+  description: Cancels a checkout.
+  params: [meta, id]
+  category: checkout
+- name: get_order
+  description: Get the details of an order.
+  params: [meta, id]
+  category: order
+capabilities:
+- id: dev.ucp.shopping.cart
+  version: '2026-04-08'
+- id: dev.ucp.shopping.checkout
+  version: '2026-04-08'
+- id: dev.ucp.shopping.fulfillment
+  version: '2026-04-08'
+  extends: [dev.ucp.shopping.checkout, dev.ucp.shopping.cart]
+  requires_protocol_min: '2026-04-08'
+  config:
+    allows_multi_destination_shipping: false
+    allows_method_combinations: [[shipping]]
+- id: dev.ucp.shopping.discount
+  version: '2026-04-08'
+  extends: [dev.ucp.shopping.checkout, dev.ucp.shopping.cart]
+  requires_protocol_min: '2026-04-08'
+- id: dev.ucp.shopping.order
+  version: '2026-04-08'
+- id: dev.ucp.shopping.catalog.search
+  version: '2026-04-08'
+- id: dev.ucp.shopping.catalog.lookup
+  version: '2026-04-08'
+- id: dev.shopify.catalog
+  version: '2026-04-08'
+  extends: [dev.ucp.shopping.catalog.search, dev.ucp.shopping.catalog.lookup]
+  spec: https://shopify.dev/docs/agents/catalog/storefront-catalog
+payment_handlers:
+- id: shopify.card
+  handler: dev.shopify.card
+  version: '2026-01-15'
+  card_brands: [visa, master, american_express, discover, diners_club]
+- id: shop_pay
+  handler: dev.shopify.shop_pay
+  version: '2026-04-08'
+  shop_id: '3860496433'
+- id: gpay
+  handler: com.google.pay
+  version: '2026-01-11'
+  card_networks: [VISA, MASTERCARD, AMEX, DISCOVER]
+  auth_methods: [PAN_ONLY, CRYPTOGRAM_3DS]
+  gateway: shopify
+  merchant_name: Bartesian
+  merchant_origin: bartesian.com
+related:
+  shop_skill: https://shop.app/SKILL.md
+  shop_skill_note: >-
+    Bartesian's own agents.md recommends the cross-store Shopify "Shop skill" at
+    https://shop.app/SKILL.md for buy-for-me agents. That skill is published by
+    Shopify, not by Bartesian, and is referenced here rather than harvested as a
+    Bartesian artifact.
+  agentic_discovery_sitemap: https://bartesian.com/sitemap_agentic_discovery.xml
+x-evidence:
+  fetched: '2026-08-06'
+  ucp_profile: {url: 'https://bartesian.com/.well-known/ucp', http_status: 200, content_type: application/json}
+  mcp_tools_list: {url: 'https://bartesian.com/api/ucp/mcp', method: POST, http_status: 200,
+    content_type: application/json, tool_count: 13}
+  mcp_initialize: {url: 'https://bartesian.com/api/ucp/mcp', method: POST, http_status: 200}
+  mcp_tools_call: {url: 'https://bartesian.com/api/ucp/mcp', method: POST, http_status: 422,
+    note: 'anonymous tools/call rejected - UCP-Agent profile required'}
+  mcp_endpoint_get: {url: 'https://bartesian.com/api/ucp/mcp', method: GET, http_status: 404,
+    note: 'POST only'}

@@ -1,0 +1,9 @@
+{
+    "resource": "https://bartesian.com",
+    "authorization_servers": [
+        "https://shopify.com/authentication/3860496433"
+    ],
+    "bearer_methods_supported": [
+        "header"
+    ]
+}

@@ -1,0 +1,55 @@
+generated: '2026-08-06'
+method: probed
+source: https://bartesian.com/.well-known/openid-configuration
+docs: https://bartesian.com/.well-known/oauth-authorization-server
+note: >-
+  Bartesian ships no OpenAPI, so these scopes were not derived from a spec. They
+  are the scopes_supported list published verbatim by the Shopify customer
+  account authorization server that fronts the Bartesian storefront
+  (issuer https://shopify.com/authentication/3860496433). The UCP / MCP commerce
+  endpoint at /api/ucp/mcp does not use these scopes - it identifies the calling
+  platform with a UCP-Agent profile URI instead - so this scope set covers
+  customer-account access only.
+schemes:
+- name: shopify-customer-account-oidc
+  source: well-known/bartesian-openid-configuration.json
+  issuer: https://shopify.com/authentication/3860496433
+  flows:
+  - flow: authorizationCode
+    authorizationUrl: https://shopify.com/authentication/3860496433/oauth/authorize
+    tokenUrl: https://shopify.com/authentication/3860496433/oauth/token
+    pkce: S256
+scopes:
+- scope: openid
+  description: Standard OpenID Connect scope; requests an ID token identifying the
+    signed-in Bartesian customer.
+  flows: [authorizationCode]
+  sources: [well-known/bartesian-openid-configuration.json]
+- scope: email
+  description: Releases the customer's email and email_verified claims.
+  flows: [authorizationCode]
+  sources: [well-known/bartesian-openid-configuration.json]
+- scope: customer-account-api:full
+  description: Full access to the Shopify Customer Account API for the signed-in customer
+    (orders, addresses, profile, subscriptions).
+  flows: [authorizationCode]
+  sources: [well-known/bartesian-openid-configuration.json]
+- scope: customer-account-mcp-api:full
+  description: Full access to the Shopify customer-account MCP API for the signed-in
+    customer - the authenticated, customer-scoped MCP surface, distinct from the
+    anonymous UCP shopping MCP endpoint at /api/ucp/mcp.
+  flows: [authorizationCode]
+  sources: [well-known/bartesian-openid-configuration.json]
+granularity:
+  assessment: coarse
+  note: >-
+    Two of the four scopes are `:full`. There is no read-only or per-resource
+    split (orders vs addresses vs subscriptions), so a customer authorizing an
+    agent to read order history necessarily grants write access to the whole
+    account. This is a Shopify platform default, not a Bartesian choice, but it
+    is the consent surface a Bartesian customer actually faces.
+x-evidence:
+  fetched: '2026-08-06'
+  url: https://bartesian.com/.well-known/openid-configuration
+  http_status: 200
+  content_type: application/json

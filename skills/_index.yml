@@ -1,0 +1,21 @@
+generated: '2026-08-06'
+method: generated
+source: mcp/bartesian-ucp-shopping-tools.json + https://bartesian.com/agents.md
+note: >-
+  Bartesian publishes no OpenAPI, so these skills are grounded in the live tool
+  schemas the store's own MCP endpoint returned to an anonymous tools/list on
+  2026-08-06, saved verbatim at mcp/bartesian-ucp-shopping-tools.json, plus the
+  rules Bartesian states in its published agents.md. Every tool named in a skill
+  exists verbatim in that response. Bartesian itself publishes no skill files;
+  its agents.md points buy-for-me agents at Shopify's cross-store Shop skill
+  (https://shop.app/SKILL.md), which is Shopify's artifact, not Bartesian's.
+skills:
+- file: bartesian-shop-and-checkout.md
+  name: Shop the Bartesian catalog and complete a checkout
+  api: mcp/bartesian-ucp-shopping-tools.json
+  operations: [search_catalog, get_product, create_cart, update_cart, create_checkout,
+    update_checkout, complete_checkout, get_order]
+- file: bartesian-catalog-lookup.md
+  name: Read the Bartesian catalog without transacting
+  api: mcp/bartesian-ucp-shopping-tools.json
+  operations: [search_catalog, lookup_catalog, get_product]

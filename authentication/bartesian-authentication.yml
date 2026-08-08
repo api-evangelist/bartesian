@@ -1,0 +1,90 @@
+generated: '2026-08-06'
+method: probed
+source: https://bartesian.com/.well-known/openid-configuration
+docs: https://bartesian.com/agents.md
+summary:
+  types: [oauth2, openIdConnect, custom-header]
+  oauth2_flows: [authorizationCode, refreshToken, jwt-bearer]
+  pkce: [S256]
+  api_key_in: []
+  note: >-
+    Bartesian publishes no first-party developer API and issues no API keys. Two
+    distinct auth models were observed on the storefront host. (1) The UCP / MCP
+    commerce endpoint leaves DISCOVERY entirely open - anonymous initialize and
+    tools/list both return 200 - and gates only EXECUTION, requiring a UCP-Agent
+    identity header carrying the calling platform's own UCP profile URI, with
+    payment authorization deferred to the buyer. (2) Shopify customer accounts on
+    the same host publish full OAuth 2.0 / OpenID Connect discovery.
+schemes:
+- name: ucp-agent
+  type: custom-header
+  in: header
+  parameter_name: UCP-Agent
+  json_rpc_param: meta.ucp-agent.profile
+  required: true
+  format: uri
+  applies_to: tool execution (tools/call), resources/list
+  does_not_apply_to: [initialize, tools/list]
+  description: >-
+    URL to the calling platform's UCP profile document. Required on every UCP
+    Shopping Service tool invocation - `meta.ucp-agent` is in the required list
+    of all 13 published tool schemas. An anonymous tools/call returns HTTP 422
+    with JSON-RPC error -32001 "UCP discovery failed" and data.code
+    invalid_profile_url. It is NOT required to read the contract: tools/list
+    returns all 13 tools and their full inputSchemas without it.
+  sources: [mcp/bartesian-ucp-shopping-tools.json]
+- name: shopify-customer-account-oidc
+  type: openIdConnect
+  openIdConnectUrl: https://bartesian.com/.well-known/openid-configuration
+  issuer: https://shopify.com/authentication/3860496433
+  authorizationUrl: https://shopify.com/authentication/3860496433/oauth/authorize
+  tokenUrl: https://shopify.com/authentication/3860496433/oauth/token
+  end_session_endpoint: https://shopify.com/authentication/3860496433/logout
+  jwks_uri: https://shopify.com/authentication/3860496433/.well-known/jwks.json
+  response_types_supported: [code]
+  grant_types_supported: [authorization_code, refresh_token, 'urn:ietf:params:oauth:grant-type:jwt-bearer']
+  token_endpoint_auth_methods_supported: [client_secret_basic]
+  code_challenge_methods_supported: [S256]
+  id_token_signing_alg_values_supported: [RS256]
+  subject_types_supported: [public]
+  claims_supported: [iss, sub, aud, exp, iat, nonce, sid, email, email_verified]
+  scopes: [openid, email, 'customer-account-api:full', 'customer-account-mcp-api:full']
+  op_policy_uri: https://www.shopify.com/legal/privacy
+  op_tos_uri: https://www.shopify.com/legal/terms
+  sources: [well-known/bartesian-openid-configuration.json]
+- name: shopify-oauth-authorization-server
+  type: oauth2
+  rfc: RFC 8414
+  metadata_url: https://bartesian.com/.well-known/oauth-authorization-server
+  identical_to: shopify-customer-account-oidc
+  note: byte-identical document to the OIDC discovery response
+  sources: [well-known/bartesian-oauth-authorization-server.json]
+protected_resource:
+  rfc: RFC 9728
+  metadata_url: https://bartesian.com/.well-known/oauth-protected-resource
+  resource: https://bartesian.com
+  authorization_servers: [https://shopify.com/authentication/3860496433]
+  bearer_methods_supported: [header]
+  sources: [well-known/bartesian-oauth-protected-resource.json]
+payment_authorization:
+  model: buyer-approved
+  rule: >-
+    complete_checkout must not be called without contemporaneous buyer approval
+    of the payment. Bartesian states this as a hard rule in its own agents.md.
+  handlers: [shop_pay, shopify.card, gpay]
+  agent_never_handles_card: true
+not_found:
+- {path: /.well-known/security.txt, host: bartesian.com, status: 404}
+- {path: /.well-known/api-catalog, host: bartesian.com, status: 404}
+- {note: 'no api.bartesian.com, developer.bartesian.com or docs.bartesian.com host
+    resolves'}
+x-evidence:
+  fetched: '2026-08-06'
+  urls:
+  - {url: 'https://bartesian.com/.well-known/openid-configuration', http_status: 200}
+  - {url: 'https://bartesian.com/.well-known/oauth-authorization-server', http_status: 200}
+  - {url: 'https://bartesian.com/.well-known/oauth-protected-resource', http_status: 200}
+  - {url: 'https://bartesian.com/api/ucp/mcp', http_status: 200, note: 'anonymous tools/list
+      ACCEPTED - 13 tools returned'}
+  - {url: 'https://bartesian.com/api/ucp/mcp', http_status: 422, note: 'anonymous tools/call
+      rejected - UCP-Agent profile required'}

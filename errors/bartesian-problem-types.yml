@@ -1,0 +1,123 @@
+generated: '2026-08-06'
+method: derived
+source: mcp/bartesian-ucp-shopping-tools.json
+sources:
+- mcp/bartesian-ucp-shopping-tools.json
+- live probe of https://bartesian.com/api/ucp/mcp
+- https://ucp.dev/2026-04-08/schemas/shopping/types/error_response.json
+- https://ucp.dev/2026-04-08/schemas/shopping/types/error_code.json
+format: ucp-message-envelope
+rfc9457: false
+note: >-
+  Bartesian ships no OpenAPI, so there are no 4xx/5xx response objects to derive
+  from. This catalog is derived from the UCP Shopping Service contract the
+  Bartesian storefront serves plus errors observed live against the store's own
+  MCP endpoint. Errors are NOT RFC 9457 application/problem+json; UCP returns a
+  business-error envelope beside a normal JSON-RPC error object.
+envelopes:
+- name: json-rpc-error
+  layer: transport
+  shape:
+    jsonrpc: '2.0'
+    id: <request id>
+    error: {code: <int>, message: <string>, data: {code: <string>, content: <string>,
+        continue_url: <uri>}}
+- name: ucp-error-response
+  layer: business
+  schema: https://ucp.dev/2026-04-08/schemas/shopping/types/error_response.json
+  required: [ucp, messages]
+  shape:
+    ucp: {status: error}
+    messages: [{type: error, code: <error_code>, content: <human readable>, severity: <severity>,
+        path: <RFC 9535 JSONPath>, content_type: plain|markdown}]
+    continue_url: <uri for buyer handoff or session recovery>
+severities:
+- id: recoverable
+  meaning: platform can resolve by modifying inputs and retrying via API
+- id: requires_buyer_input
+  meaning: merchant requires information the API cannot collect programmatically;
+    checkout incomplete
+- id: requires_buyer_review
+  meaning: buyer must authorize before order placement due to policy, regulatory or
+    entitlement rules
+- id: unrecoverable
+  meaning: no valid resource exists to act on; retry with a new resource or new inputs
+escalation: >-
+  Messages with a requires_* severity contribute to a resource status of
+  requires_escalation.
+problems:
+- code: -32001
+  layer: transport
+  title: UCP discovery failed
+  data_code: invalid_profile_url
+  detail: 'Unable to fetch agent profile: Missing profile uri'
+  http_status: 422
+  continue_url: https://bartesianshop.myshopify.com/
+  remediation: Send meta.ucp-agent.profile (HTTP UCP-Agent header) pointing at the
+    calling platform's own UCP profile document.
+  observed: true
+  observed_at: '2026-08-06'
+  observed_on: https://bartesian.com/api/ucp/mcp
+  observed_methods: [tools/call, resources/list]
+  note: >-
+    Notably NOT returned by initialize or tools/list, both of which answer 200
+    anonymously on this store. The gate is on execution, not discovery.
+- code: not_found
+  layer: business
+  title: Resource not found
+  standard: true
+- code: out_of_stock
+  layer: business
+  title: Item out of stock
+  standard: true
+- code: item_unavailable
+  layer: business
+  title: Item unavailable
+  standard: true
+- code: address_undeliverable
+  layer: business
+  title: Address undeliverable
+  standard: true
+- code: eligibility_invalid
+  layer: business
+  title: Eligibility invalid
+  standard: true
+  note: >-
+    Relevant on this store in particular. Bartesian sells cocktail capsules and
+    machines; age-restricted and jurisdiction-restricted fulfilment is exactly the
+    class of failure this code covers.
+- code: payment_failed
+  layer: business
+  title: Payment failed
+  standard: true
+- code: identity_required
+  layer: business
+  title: Buyer identity required
+  standard: true
+- code: insufficient_scope
+  layer: business
+  title: Insufficient scope
+  standard: true
+freeform_codes_permitted: true
+rate_limit_errors:
+  http_status: 429
+  documented_at: https://bartesian.com/agents.md
+  guidance: The MCP endpoint is rate-limited per IP. Back off on 429 responses.
+  observed: false
+x-evidence:
+  fetched: '2026-08-06'
+  live_error:
+    url: https://bartesian.com/api/ucp/mcp
+    method: POST
+    http_status: 422
+    request: '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"search_catalog","arguments":{"catalog":{"query":"cocktail
+      capsule"}}}}'
+    body: '{"jsonrpc":"2.0","id":2,"error":{"code":-32001,"message":"UCP discovery
+      failed","data":{"code":"invalid_profile_url","content":"Unable to fetch agent
+      profile: Missing profile uri","continue_url":"https://bartesianshop.myshopify.com/"}}}'
+  standard_codes_source:
+    url: https://ucp.dev/2026-04-08/schemas/shopping/types/error_code.json
+    note: >-
+      The codes marked standard:true are the enumerated examples of the UCP
+      error_code type referenced by the contract this store declares. UCP permits
+      freeform codes, so this list is not exhaustive for Bartesian.

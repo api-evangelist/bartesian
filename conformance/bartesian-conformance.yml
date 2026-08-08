@@ -1,0 +1,132 @@
+generated: '2026-08-06'
+method: probed
+source: https://bartesian.com/.well-known/ucp
+note: >-
+  Bartesian makes no compliance or certification claims of its own on any surface
+  we could reach. Everything asserted below was observed directly against
+  bartesian.com or read out of the contract that store serves. No Compliance
+  pointer is wired, because no published compliance program was found.
+standards:
+- id: ucp-2026-04-08
+  name: Universal Commerce Protocol 2026-04-08
+  conforms: true
+  evidence: /.well-known/ucp returns 200 declaring version 2026-04-08 plus supported_versions
+    2026-04-08 and 2026-01-23, a dev.ucp.shopping service, eight capabilities and
+    three payment handlers
+- id: mcp
+  name: Model Context Protocol
+  conforms: true
+  evidence: >-
+    dev.ucp.shopping declares transport "mcp"; the endpoint answers an anonymous
+    initialize with 200 and protocolVersion 2025-06-18, serverInfo
+    universal-commerce 0.1.0, and capabilities tools/prompts/resources/logging
+- id: mcp-tools-list-anonymous
+  name: Anonymous MCP tool discovery
+  conforms: true
+  evidence: POST tools/list without credentials returns 200 with all 13 tools and
+    their full JSON Schema draft 2020-12 inputSchemas
+  note: >-
+    This is the check most agent surfaces in the catalog fail. Bartesian's store
+    publishes its tool contract to any caller and gates only execution.
+- id: json-schema-2020-12
+  name: JSON Schema draft 2020-12
+  conforms: true
+  evidence: every tool inputSchema declares $schema https://json-schema.org/draft/2020-12/schema
+- id: openrpc-1.3.2
+  name: OpenRPC 1.3.2
+  conforms: true
+  evidence: the merchant profile names https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
+    as the schema for its MCP service
+- id: oauth2
+  name: OAuth 2.0
+  conforms: true
+  evidence: /.well-known/oauth-authorization-server publishes authorization_endpoint,
+    token_endpoint and grant_types_supported
+- id: rfc8414-oauth-authorization-server-metadata
+  conforms: true
+  evidence: /.well-known/oauth-authorization-server returns 200 with issuer + jwks_uri
+- id: rfc9728-oauth-protected-resource-metadata
+  conforms: true
+  evidence: /.well-known/oauth-protected-resource returns 200 with resource https://bartesian.com
+    + authorization_servers
+- id: oidc-discovery
+  name: OpenID Connect Discovery 1.0
+  conforms: true
+  evidence: /.well-known/openid-configuration returns 200 with issuer, jwks_uri, id_token_signing_alg_values_supported
+    RS256
+- id: rfc7636-pkce
+  conforms: true
+  evidence: code_challenge_methods_supported [S256]
+- id: idempotency-key
+  conforms: true
+  partial: true
+  evidence: meta.idempotency-key is declared and REQUIRED on complete_checkout in
+    the live tool schema
+  gap: >-
+    It is declared on that operation only. cancel_checkout and cancel_cart - both
+    state-changing, both carrying an idempotency key in the generic UCP OpenRPC
+    contract - do not accept one on this store.
+- id: rfc9535-jsonpath
+  conforms: true
+  evidence: UCP message objects locate the offending component with an RFC 9535 JSONPath
+    in `path`
+- id: iso3166-1-alpha-2
+  conforms: true
+  evidence: context.address_country is specified as ISO 3166-1 alpha-2
+- id: bcp47
+  conforms: true
+  evidence: context.language is specified as IETF BCP 47
+- id: iso4217
+  conforms: true
+  evidence: context.currency is specified as ISO 4217
+- id: llms-txt
+  conforms: true
+  evidence: /llms.txt returns 200 text/markdown, is announced in robots.txt via an
+    `llms:` directive, and mirrors the canonical /agents.md
+- id: agents-md
+  conforms: true
+  evidence: /agents.md returns 200 and is listed in a dedicated /sitemap_agentic_discovery.xml
+- id: rfc8615-well-known-uris
+  conforms: true
+  evidence: five discovery documents served under /.well-known/ (ucp, ucp/2026-04-08,
+    openid-configuration, oauth-authorization-server, oauth-protected-resource)
+- id: rfc9116-security-txt
+  conforms: false
+  evidence: /.well-known/security.txt returns 404 on bartesian.com
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: errors use the UCP message envelope and JSON-RPC error objects, not application/problem+json
+- id: openapi
+  conforms: false
+  evidence: /openapi.json and /swagger.json return 404; /api-docs, /docs and /developers
+    return the Shopify 404 page. The machine-readable contract is JSON Schema over
+    MCP, not OpenAPI.
+- id: graphql
+  conforms: false
+  evidence: /graphql returns 404 on bartesian.com; no public GraphQL endpoint is documented
+- id: asyncapi
+  conforms: false
+  evidence: no event, streaming or webhook surface is published by Bartesian
+- id: a2a
+  name: A2A Agent Card
+  conforms: false
+  evidence: /.well-known/agent-card.json and /.well-known/agent.json both return 404
+    on bartesian.com; a control path returned the identical 404 body, so this is a
+    genuine miss
+compliance_program:
+  published: false
+  certifications: []
+  note: >-
+    No trust center, SOC 2, ISO 27001, PCI DSS or HIPAA claim was found on any
+    reachable Bartesian surface. Card data is handled by Shopify's payment
+    handlers, never by the agent or by Bartesian's own endpoint.
+regulatory_note: >-
+  Bartesian sells cocktail capsules and machines. Age-verified and
+  jurisdiction-restricted sale of alcohol-adjacent goods is a real regulatory
+  surface for agent-driven checkout, and nothing in the published UCP profile,
+  the tool schemas or agents.md documents an age-verification step. The UCP
+  eligibility_invalid and requires_buyer_review paths exist to carry it, but
+  Bartesian does not say whether or how it uses them.
+x-evidence:
+  fetched: '2026-08-06'
+  hosts_probed: [bartesian.com, www.bartesian.com, bartesianshop.myshopify.com]

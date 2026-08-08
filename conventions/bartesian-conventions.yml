@@ -1,0 +1,182 @@
+generated: '2026-08-06'
+method: searched
+source: https://bartesian.com/agents.md
+sources:
+- https://bartesian.com/agents.md
+- https://bartesian.com/llms.txt
+- https://bartesian.com/.well-known/ucp
+- mcp/bartesian-ucp-shopping-tools.json
+summary: >-
+  Bartesian publishes no first-party REST API and therefore no house REST
+  conventions. The cross-cutting semantics recorded here are those of the
+  Universal Commerce Protocol Shopping Service that the Bartesian storefront
+  implements, taken from the live tool schemas the store's own MCP endpoint
+  returns to an anonymous caller, plus the read-only Shopify storefront JSON
+  endpoints Bartesian documents in its published agents.md.
+transport:
+  style: JSON-RPC 2.0 over HTTP POST (MCP)
+  endpoint: https://bartesian.com/api/ucp/mcp
+  content_type: application/json
+  accept: application/json, text/event-stream
+  methods_allowed: [POST]
+  note: GET on the MCP endpoint returns 404; it is POST-only.
+authentication:
+  agent_identity:
+    header: UCP-Agent
+    json_rpc_param: meta.ucp-agent.profile
+    value: URI of the calling platform's UCP profile document
+    required: true
+    required_on: every tool call
+    evidence: >-
+      `meta` is required on all 13 tools and `ucp-agent` is required inside it on
+      all 13. An anonymous tools/call returns HTTP 422 / JSON-RPC -32001.
+  discovery_is_open:
+    note: >-
+      Unusually, discovery is NOT gated on this store. `initialize` and
+      `tools/list` both answer 200 anonymously and return the complete tool
+      schemas. Only execution requires the agent profile.
+  customer_identity:
+    model: OAuth 2.0 authorization code + PKCE (S256) via Shopify customer accounts
+    discovery: https://bartesian.com/.well-known/openid-configuration
+    artifact: authentication/bartesian-authentication.yml
+idempotency:
+  supported: true
+  header: Idempotency-Key
+  json_rpc_param: meta.idempotency-key
+  type: string
+  description: An idempotency key for completing the checkout.
+  required_on:
+  - complete_checkout
+  optional_on: []
+  not_accepted_on:
+  - get_checkout
+  - create_checkout
+  - update_checkout
+  - cancel_checkout
+  - get_cart
+  - create_cart
+  - update_cart
+  - cancel_cart
+  - get_order
+  - search_catalog
+  - lookup_catalog
+  - get_product
+  retention: not published
+  evidence: >-
+    Read from the live tool schemas. `meta.idempotency-key` appears in exactly
+    one tool - complete_checkout - where it is listed in meta.required alongside
+    ucp-agent. No other tool declares the property at all. This is narrower than
+    the generic UCP OpenRPC contract at ucp.dev, which also carries an
+    idempotency key on cancel_checkout and cancel_cart; what is recorded here is
+    what this store actually serves.
+  artifact_note: >-
+    Idempotency is genuinely enforced on the one operation that moves money, so a
+    canonical Idempotency pointer is wired in apis.yml.
+pagination:
+  style: cursor
+  applies_to: [search_catalog]
+  params:
+    cursor: {in: catalog.pagination.cursor, type: string, description: Pagination cursor.}
+    limit: {in: catalog.pagination.limit, type: integer, default: 10, minimum: 1}
+  batch_limits:
+    lookup_catalog: {param: catalog.ids, minItems: 1, maxItems: 10}
+  evidence: mcp/bartesian-ucp-shopping-tools.json
+buyer_context:
+  params:
+  - context.address_country
+  - context.address_region
+  - context.postal_code
+  - context.language
+  - context.currency
+  - context.intent
+  formats:
+    address_country: ISO 3166-1 alpha-2
+    language: IETF BCP 47
+    currency: ISO 4217
+  purpose: localization, accurate pricing and availability
+  source: https://bartesian.com/agents.md
+platform_signals:
+  params:
+  - dev.ucp.buyer_ip
+  - dev.ucp.user_agent
+  description: Platform environment data passed as `signals` on catalog operations.
+money:
+  representation: minor currency units (integer)
+  evidence: catalog.filters.price.min / max are described as "price in minor currency
+    units"
+identifiers:
+  style: Shopify global IDs (GID)
+  formats:
+    cart: 'gid://shopify/Cart/abc123'
+    checkout: 'gid://shopify/Checkout/abc123'
+    order: 'gid://shopify/Order/123'
+  evidence: id parameter descriptions in the live tool schemas
+buyer_approval:
+  rule: >-
+    Checkout requires human approval. Agents must not complete payment without
+    explicit buyer consent. Where contemporaneous buyer approval cannot be
+    obtained, Bartesian's agents.md directs agents to route the purchase through
+    Shop Pay via the Shopify Shop skill instead.
+  enforced_by: complete_checkout
+  source: https://bartesian.com/agents.md
+versioning:
+  scheme: dated protocol version
+  current: '2026-04-08'
+  supported: ['2026-04-08', '2026-01-23']
+  negotiation: version-pinned profile documents at /.well-known/ucp/{version}
+  discovery: https://bartesian.com/.well-known/ucp
+  mcp_protocol_version: '2025-06-18'
+rate_limiting:
+  documented: true
+  scope: per IP on the MCP endpoint
+  signal: HTTP 429
+  guidance: back off on 429 responses
+  limit_count: not published
+  source: https://bartesian.com/agents.md
+  observed: no 429 encountered during this pass
+error_envelope:
+  transport_errors: JSON-RPC 2.0 error object (observed code -32001 with data.code
+    and data.continue_url)
+  business_errors: >-
+    UCP error_response object - {ucp: {status: error}, messages: [...],
+    continue_url} where each message carries type, code, content, severity and an
+    optional RFC 9535 JSONPath `path` to the offending component
+  problem_json: false
+  artifact: errors/bartesian-problem-types.yml
+field_expansion:
+  supported: false
+  note: no sparse-fieldset or expansion parameter is exposed by the tool schemas
+metadata:
+  supported: true
+  note: cart and checkout both accept an `attribution` object; UCP `meta` is reserved
+    for protocol metadata, not free-form customer metadata
+tracing:
+  request_id_header: not published
+  note: JSON-RPC `id` is echoed on every response; no separate request-id header was
+    observed
+read_only_surface:
+  description: Endpoints Bartesian documents in agents.md for agents that only read
+  host: https://bartesian.com
+  auth: none
+  endpoints:
+  - {method: GET, path: /collections/all, description: browse all products}
+  - {method: GET, path: '/products/{handle}', description: product page}
+  - {method: GET, path: '/products/{handle}.json', description: product JSON}
+  - {method: GET, path: '/collections/{handle}', description: collection page}
+  - {method: GET, path: '/collections/{handle}/products.json', description: collection
+      products JSON}
+  - {method: GET, path: '/search?q={query}&type=product', description: storefront search}
+  - {method: GET, path: /sitemap.xml, description: sitemap}
+  verified:
+  - {url: 'https://bartesian.com/products.json', http_status: 200, note: 'returns products[]
+      with id, title, handle, body_html, published_at, vendor, product_type, tags,
+      variants, images, options'}
+  - {url: 'https://bartesian.com/collections/all/products.json?limit=3', http_status: 200}
+cross_links:
+  authentication: authentication/bartesian-authentication.yml
+  scopes: scopes/bartesian-scopes.yml
+  errors: errors/bartesian-problem-types.yml
+  lifecycle: lifecycle/bartesian-lifecycle.yml
+  mcp: mcp/bartesian-mcp.yml
+  data_model: data-model/bartesian-data-model.yml
+  conformance: conformance/bartesian-conformance.yml

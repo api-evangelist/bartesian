@@ -1,0 +1,71 @@
+generated: '2026-08-06'
+method: searched
+source: https://bartesian.com/.well-known/ucp
+versioning:
+  scheme: dated protocol version (UCP)
+  current: '2026-04-08'
+  supported:
+  - version: '2026-04-08'
+    profile: https://bartesianshop.myshopify.com/.well-known/ucp/2026-04-08
+    label: latest stable
+  - version: '2026-01-23'
+    profile: https://bartesianshop.myshopify.com/.well-known/ucp/2026-01-23
+  discovery: https://bartesian.com/.well-known/ucp
+  docs: https://bartesian.com/agents.md
+  mcp_protocol_version: '2025-06-18'
+  server_version: universal-commerce 0.1.0
+  note: >-
+    Version negotiation is handled by the merchant profile, which lists every
+    protocol version the store still serves and a version-pinned profile document
+    for each. Capability entries additionally declare requires.protocol.min
+    (2026-04-08 for fulfillment, discount and dev.shopify.catalog). The MCP
+    server reports its own protocolVersion 2025-06-18 on initialize, which is a
+    separate axis from the UCP dated version.
+deprecation:
+  policy_url: null
+  sunset_header: unknown
+  note: >-
+    No deprecation or sunset policy is published by Bartesian. The only
+    observable deprecation signal is the drop-off of older UCP versions from the
+    supported_versions map in the merchant profile. No RFC 8594 Sunset or
+    Deprecation header was observed on any probed response.
+sla:
+  url: null
+status_page:
+  url: null
+  note: >-
+    Bartesian publishes no first-party status page. The storefront runs on
+    Shopify, whose platform status page (status.shopify.com) covers the
+    infrastructure but is not a Bartesian-published operational commitment, so no
+    StatusPage pointer is wired.
+changelog:
+  url: null
+  note: >-
+    No dated changelog is published for the storefront or its agent surface. The
+    agentic-discovery sitemap declares /agents.md changefreq weekly, which is the
+    closest thing to a published change cadence.
+  agent_doc_changefreq: weekly
+  agent_doc_sitemap: https://bartesian.com/sitemap_agentic_discovery.xml
+deprecated_operations: []
+hosts:
+- host: bartesian.com
+  role: Shopify storefront, commerce site and UCP/MCP agent surface
+  state: active
+- host: bartesianshop.myshopify.com
+  role: canonical Shopify origin referenced by the UCP profile and the error continue_url
+  state: active
+  note: the UCP profile advertises the MCP endpoint at this origin; the same endpoint
+    answers on bartesian.com
+markets:
+  note: >-
+    The sitemap index publishes localized storefronts for en-CA, fr-CA, en-GB and
+    en-EU alongside the US default, so the catalog and pricing surfaces are
+    market-scoped. Pass context.address_country and context.currency accordingly.
+  locales: [en (us), en-ca, fr-ca, en-gb, en-eu]
+  source: https://bartesian.com/sitemap.xml
+x-evidence:
+  fetched: '2026-08-06'
+  urls:
+  - {url: 'https://bartesian.com/.well-known/ucp', http_status: 200}
+  - {url: 'https://bartesian.com/sitemap.xml', http_status: 200}
+  - {url: 'https://bartesian.com/sitemap_agentic_discovery.xml', http_status: 200}
