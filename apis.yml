@@ -1,8 +1,22 @@
 aid: bartesian
 name: Bartesian
-description: 'Bartesian is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'Bartesian is a Chicago-based consumer appliance company founded in 2014
+  by Ryan Close, maker of a capsule-based countertop cocktail machine that mixes
+  bar-quality drinks on demand from a pod of bitters, juices and extracts plus the
+  user''s own base spirit. The company launched off a Kickstarter campaign, took
+  investment from Beam Suntory in 2016, and closed a US$20 million round led by
+  Cleveland Avenue in 2021. It runs a razor-and-blade model selling machines and
+  cocktail capsules direct to consumers, plus commercial placements in stadiums and
+  airport lounges. Bartesian publishes no first-party developer program or REST API,
+  but its Shopify storefront at bartesian.com exposes a real and unusually open
+  agent-facing commerce surface: a published llms.txt and agents.md, a dedicated
+  agentic-discovery sitemap, a Universal Commerce Protocol merchant profile at
+  /.well-known/ucp, and a live MCP endpoint at /api/ucp/mcp that returns all 13 UCP
+  Shopping tools with complete JSON Schema inputSchemas to an anonymous caller -
+  gating execution, not discovery - alongside OAuth 2.0 / OpenID Connect discovery
+  for Shopify customer accounts.'
 url: https://raw.githubusercontent.com/api-evangelist/bartesian/refs/heads/main/apis.yml
+image: https://avatars.githubusercontent.com/u/220963642?v=4
 x-type: company
 x-source: harvest:secondary-market
 x-tier: stub
@@ -12,12 +26,98 @@ created: '2026-08-06'
 modified: '2026-08-06'
 tags:
 - Company
-apis: []
+- Retail
+- Ecommerce
+- Consumer Products
+- Appliances
+- Beverages
+- Direct to Consumer
+- Commerce
+- Agentic Commerce
+- Universal Commerce Protocol
+- Model Context Protocol
+- Shopify
+apis:
+- aid: bartesian:commerce
+  name: Bartesian Commerce (UCP Shopping)
+  description: 'The agent-facing commerce surface of the Bartesian Shopify storefront.
+    The store publishes a Universal Commerce Protocol merchant profile at
+    https://bartesian.com/.well-known/ucp declaring UCP versions 2026-04-08 and
+    2026-01-23, the dev.ucp.shopping service over both an MCP transport at
+    https://bartesian.com/api/ucp/mcp and an embedded transport, and eight
+    capabilities covering cart, checkout, fulfillment, discount, order and catalog
+    search/lookup. Unlike most UCP storefronts, this endpoint answers an anonymous
+    initialize and tools/list with HTTP 200, returning all 13 tools together with
+    their full JSON Schema draft 2020-12 input schemas - the real contract, captured
+    verbatim. Tool invocation is gated: every tool requires a meta.ucp-agent.profile
+    URI, and an anonymous tools/call returns HTTP 422 with JSON-RPC error -32001.'
+  humanURL: https://bartesian.com/agents.md
+  baseURL: https://bartesian.com/api/ucp/mcp
+  tags:
+  - Commerce
+  - Agentic Commerce
+  - Model Context Protocol
+  - Universal Commerce Protocol
+  - Checkout
+  - Cart
+  - Catalog
+  properties:
+  - type: MCPServer
+    url: mcp/bartesian-mcp.yml
+  - type: LLMsTxt
+    url: llms/bartesian-llms.txt
+  - type: WellKnown
+    url: well-known/bartesian-well-known.yml
+  - type: Authentication
+    url: authentication/bartesian-authentication.yml
+  - type: OAuthScopes
+    url: scopes/bartesian-scopes.yml
+  - type: Conventions
+    url: conventions/bartesian-conventions.yml
+  - type: Idempotency
+    url: conventions/bartesian-conventions.yml
+  - type: ErrorCatalog
+    url: errors/bartesian-problem-types.yml
+  - type: DataModel
+    url: data-model/bartesian-data-model.yml
+  - type: Lifecycle
+    url: lifecycle/bartesian-lifecycle.yml
+  - type: Conformance
+    url: conformance/bartesian-conformance.yml
+  - type: AgentSkill
+    url: skills/_index.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: DomainSecurity
+  url: security/bartesian-domain-security.yml
 - type: Website
+  url: https://bartesian.com/
+- type: Documentation
+  url: https://bartesian.com/agents.md
+- type: GitHubOrganization
+  url: https://github.com/Bartesian
+- type: Support
+  url: https://bartesian.com/pages/help
+- type: HelpCenter
+  url: https://bartesian.com/pages/faq
+- type: Blog
+  url: https://bartesian.com/blogs/news
+- type: Pricing
+  url: https://bartesian.com/collections/cocktail-machine
+- type: SignUp
+  url: https://bartesian.com/account/login
+- type: TermsOfService
+  url: https://bartesian.com/policies/terms-of-service
+- type: PrivacyPolicy
+  url: https://bartesian.com/policies/privacy-policy
+- type: SecondaryMarket
   url: https://www.nasdaqprivatemarket.com/
+x-enrichment:
+  date: '2026-08-06'
+  status: enriched
+  artifacts_added: 20
+  pass: local-v1
