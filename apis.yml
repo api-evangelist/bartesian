@@ -27,6 +27,19 @@ modified: '2026-08-06'
 tags:
 - Company
 - Retail
+- E-Commerce
+- Consumer Products
+- Appliances
+- Beverages
+- Direct to Consumer
+- Commerce
+- Agentic Commerce
+- Universal Commerce Protocol
+- MCP
+- Shopify
+tags_raw:
+- Company
+- Retail
 - Ecommerce
 - Consumer Products
 - Appliances
@@ -54,6 +67,14 @@ apis:
   humanURL: https://bartesian.com/agents.md
   baseURL: https://bartesian.com/api/ucp/mcp
   tags:
+  - Commerce
+  - Agentic Commerce
+  - MCP
+  - Universal Commerce Protocol
+  - Checkout
+  - Cart
+  - Catalog
+  tags_raw:
   - Commerce
   - Agentic Commerce
   - Model Context Protocol
