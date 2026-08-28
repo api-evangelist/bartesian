@@ -16,6 +16,17 @@ description: 'Bartesian is a Chicago-based consumer appliance company founded in
   gating execution, not discovery - alongside OAuth 2.0 / OpenID Connect discovery
   for Shopify customer accounts.'
 url: https://raw.githubusercontent.com/api-evangelist/bartesian/refs/heads/main/apis.yml
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: false
+  label: Hosted service · you call their endpoint
+  confidence: medium
+  source:
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://avatars.githubusercontent.com/u/220963642?v=4
 x-type: company
 x-source: harvest:secondary-market
