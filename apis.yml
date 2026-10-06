@@ -48,7 +48,7 @@ x-tier: stub
 x-tier-reason: harvest
 specificationVersion: '0.23'
 created: '2026-08-06'
-modified: '2026-08-06'
+modified: '2026-10-06'
 tags:
 - Company
 - Retail
@@ -141,6 +141,10 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- url: https://bartesian.com/blogs/articles
+  type: Blog
+- url: https://bartesian.com/blogs/articles.atom
+  type: BlogRSS
 - type: DomainSecurity
   url: security/bartesian-domain-security.yml
 - type: Website
