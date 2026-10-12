@@ -1,0 +1,16 @@
+generated: '2026-10-12'
+method: none
+source:
+- https://zapier.com/apps/bartesian/integrations
+- https://n8n.io/integrations/bartesian/
+- https://composio.dev/toolkits/bartesian
+- https://monid.ai/tools/bartesian
+checked:
+- https://composio.dev/toolkits/bartesian
+- https://monid.ai/tools/bartesian
+- https://n8n.io/integrations/bartesian/
+- https://zapier.com/apps/bartesian/integrations
+summary: null
+marketplace_apps: []
+edges: []
+templates: []
